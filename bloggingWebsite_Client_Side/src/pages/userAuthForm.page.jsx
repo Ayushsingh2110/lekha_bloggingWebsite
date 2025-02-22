@@ -2,10 +2,12 @@ import React from "react";
 import InputBox from "../components/input.component";
 import googleImg from "../imgs/google.png";
 import { Link } from "react-router-dom";
+import AnimationWrapper from "../common/page-animation";
 
 const UserAuthForm = ({ type }) => {
   return (
-    <section className="h-cover flex items-center justify-center">
+    <AnimationWrapper keyValue={type}>
+      <section className="h-cover flex items-center justify-center">
       <form className="w-[80%] max-w-[400px]">
         <h1 className="text-4xl font-gelasio text-center capitalize mb-24">
           {type == "signin" ? "Welcome back" : "Join us today"}
@@ -47,7 +49,7 @@ const UserAuthForm = ({ type }) => {
         </div>
 
         <button
-          className="btn-light normal-case w-[90%] mx-auto mt-5 transition border border-solid flex gap-2
+          className="btn-light normal-case w-[90%] mx-auto mt-5 transition duration-300 ease-in border border-solid flex gap-2
                 justify-center border-transparent hover:bg-transparent hover:border-black"
         >
           <img src={googleImg} className="w-5" />
@@ -74,6 +76,7 @@ const UserAuthForm = ({ type }) => {
 
       </form>
     </section>
+    </AnimationWrapper>
   );
 };
 export default UserAuthForm;
