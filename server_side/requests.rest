@@ -1,7 +1,8 @@
-POST http://localhost:3000/signin 
+POST http://localhost:5000/api/register
 Content-Type: application/json
 
 {
+    "fullname": "Kunal Shah", 
     "email": "kunaa@gmail.com",
-    "password": "Kunaal"
+    "password": "Kunaal@123"
 }
