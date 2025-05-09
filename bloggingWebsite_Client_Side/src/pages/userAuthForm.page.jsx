@@ -1,14 +1,70 @@
-import React from "react";
+import React, { useRef } from "react";
 import InputBox from "../components/input.component";
 import googleImg from "../imgs/google.png";
 import { Link } from "react-router-dom";
 import AnimationWrapper from "../common/page-animation";
+import dotenv from "dotenv";
+import axios from "axios";
+import { Toaster, toast } from "react-hot-toast";
+import { storeInSession } from "../common/session.jsx";
 
 const UserAuthForm = ({ type }) => {
+  const authForm = useRef();
+  const emailRegex = /^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i;
+  const passwordRegex  = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+{};:,<.>]).{6,20}$
+  let { userAuth: {access_token}, setUserAuth } = useContext();
+
+  async function userAuth(serverRoute, formData){
+    try{
+      axios.post(process.env.SERVER_DOMAIN + serverRoute, formData).then(({ data }) => {
+        console.log(data);
+        storeInSession("user",JSON.stringify(data));
+
+      }).catch((res) => {
+        console.log(res.data.error);
+      })
+    }catch(err){
+      toast.error(err.Message);
+    }
+  }
+
+  function handleFormSubmit(e){
+    try{
+      e.preventDefault();
+
+      let serverRoute = type == "signin" ? "/login" : "/register";
+      let form = new FormData(authForm.current)
+
+      let formData = {};
+
+      const { fullName, email, password } = Object.fromEntries(form);
+
+      if(fullName && fullName.length < 3){
+        return console.log({ "error" : "Fullname at least must be 3 letters long"})
+      }
+
+      if(!email.length){
+        return console.log({"error" : "Enter email."})
+      }
+
+      if(!emailRegex.test(email)){
+        return console.log({"error" : "Email is not valid."})
+      }
+
+      if(!passwordRegex.test(password)){
+        return console.log({"error" : "Password must be 6 to 20 characters long with atleast 1 lowercase, 1 uppercase, 1 number and 1 special character."})
+      }
+
+      userAuth(serverRoute, formData);
+    }catch(err){
+      console.log(err.Message)
+    }
+  }
+
   return (
     <AnimationWrapper keyValue={type}>
       <section className="h-cover flex items-center justify-center">
-      <form className="w-[80%] max-w-[400px]">
+      <form ref={authForm} className="w-[80%] max-w-[400px]">
         <h1 className="text-4xl font-gelasio text-center capitalize mb-24">
           {type == "signin" ? "Welcome back" : "Join us today"}
         </h1>
@@ -38,7 +94,7 @@ const UserAuthForm = ({ type }) => {
           icon="fi-rr-key"
         />
 
-        <button className="btn-dark center mt-14" type="submit">
+        <button className="btn-dark center mt-14" type="submit" onClick={handleFormSubmit}>
           {type == "signin" ? "Sign In" : "Sign Up"}
         </button>
 
