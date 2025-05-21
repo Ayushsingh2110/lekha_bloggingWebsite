@@ -1,4 +1,5 @@
-import React, { useRef } from "react";
+import React, { useRef, useContext } from "react";
+import { Navigate } from "react-router-dom";
 import InputBox from "../components/input.component";
 import googleImg from "../imgs/google.png";
 import { Link } from "react-router-dom";
@@ -6,55 +7,67 @@ import AnimationWrapper from "../common/page-animation";
 import dotenv from "dotenv";
 import axios from "axios";
 import { Toaster, toast } from "react-hot-toast";
-import { storeInSession } from "../common/session.jsx";
+import { storeInSession, lookInSession } from "../common/session.jsx";
+import { UserContext } from "../App";
 
 const UserAuthForm = ({ type }) => {
   const authForm = useRef();
   const emailRegex = /^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i;
-  const passwordRegex  = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+{};:,<.>]).{6,20}$
-  let { userAuth: {access_token}, setUserAuth } = useContext();
+  const passwordRegex  = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+{};:,<.>]).{6,20}$/;
+  
+  let { UserAuth: {access_token}, setUserAuth } = useContext(UserContext);
 
   async function userAuth(serverRoute, formData){
     try{
-      axios.post(process.env.SERVER_DOMAIN + serverRoute, formData).then(({ data }) => {
-        console.log(data);
+      axios.post(import.meta.env.VITE_SERVER_DOMAIN + serverRoute, formData).then(({ data }) => {
         storeInSession("user",JSON.stringify(data));
-
-      }).catch((res) => {
-        console.log(res.data.error);
+        
+        setUserAuth(data);
+      }).catch((err) => {
+        toast.error(err.response.data.error);
       })
     }catch(err){
-      toast.error(err.Message);
+      console.log(err.Message);
     }
   }
 
   function handleFormSubmit(e){
     try{
       e.preventDefault();
-
       let serverRoute = type == "signin" ? "/login" : "/register";
       let form = new FormData(authForm.current)
 
       let formData = {};
 
-      const { fullName, email, password } = Object.fromEntries(form);
+      const { fullname, email, password } = Object.fromEntries(form);
 
-      if(fullName && fullName.length < 3){
-        return console.log({ "error" : "Fullname at least must be 3 letters long"})
+      if(type != "signin"){
+        if(fullname && fullname.length < 3){
+          return console.log({ "error" : "Fullname at least must be 3 letters long"})
+        }
+  
+        if(!email.length){
+          return console.log({"error" : "Enter email."})
+        }
+  
+        if(!emailRegex.test(email)){
+          return console.log({"error" : "Email is not valid."})
+        }
+  
+        if(!passwordRegex.test(password)){
+          return console.log({"error" : "Password must be 6 to 20 characters long with atleast 1 lowercase, 1 uppercase, 1 number and 1 special character."})
+        }
+      }else{
+        if(email.length == 0 || password.length == 0){
+          return toast.error("Please enter login credentials.");
+        }
       }
-
-      if(!email.length){
-        return console.log({"error" : "Enter email."})
+   
+      formData = {
+        fullname,
+        email,
+        password
       }
-
-      if(!emailRegex.test(email)){
-        return console.log({"error" : "Email is not valid."})
-      }
-
-      if(!passwordRegex.test(password)){
-        return console.log({"error" : "Password must be 6 to 20 characters long with atleast 1 lowercase, 1 uppercase, 1 number and 1 special character."})
-      }
-
       userAuth(serverRoute, formData);
     }catch(err){
       console.log(err.Message)
@@ -62,8 +75,12 @@ const UserAuthForm = ({ type }) => {
   }
 
   return (
+    access_token ? 
+    <Navigate to="/" />
+    :
     <AnimationWrapper keyValue={type}>
       <section className="h-cover flex items-center justify-center">
+      <Toaster />
       <form ref={authForm} className="w-[80%] max-w-[400px]">
         <h1 className="text-4xl font-gelasio text-center capitalize mb-24">
           {type == "signin" ? "Welcome back" : "Join us today"}
@@ -71,7 +88,7 @@ const UserAuthForm = ({ type }) => {
 
         {type != "signin" ? (
           <InputBox
-            name="fullName"
+            name="fullname"
             type="text"
             placeholder="Full Name"
             icon="fi-rr-user"
