@@ -1,9 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useRef, useEffect } from "react";
 import logo from "../imgs/logo.png";
 import { Link, Outlet } from "react-router-dom";
+import UserNavigationPanel from "../components/user-navigation.component.jsx";
+import { UserContext } from "../App";
 
 const Navbar = () => {
   const [SearchBarVisible, setSearchBarVisible] = useState(false);
+  const [UserNavPanelVisible, setUserNavPanelVisible] = useState(false);
+
+  const { UserAuth: { access_token, image_url, username }} = useContext(UserContext);
+
+  const profileImgRef = useRef();
+
+  useEffect(() => {
+    const handleUserNavToggle = (event) => {
+      if(profileImgRef.current && !profileImgRef.current.contains(event.target)){
+        setUserNavPanelVisible(false);
+      }
+    } 
+
+    document.addEventListener("mousedown", handleUserNavToggle);
+    return () => {
+      document.removeEventListener("mousedown", handleUserNavToggle);
+    };
+  }, []);
 
   return (
     <>
@@ -39,16 +59,50 @@ const Navbar = () => {
         </div>
 
         <Link to="/editor" className="hidden md:flex gap-2 link">
-          <i class="fi fi-rr-file-edit"></i>
+          <i className="fi fi-rr-file-edit"></i>
           <p>Write</p>
         </Link>
 
-        <Link className="btn-dark py-2" to="/signin">
-          Sign In
-        </Link>
-        <Link className="hidden md:block btn-light py-2" to="/signup">
-          Sign Up
-        </Link>
+        {
+          access_token ? 
+          <>
+            <Link to="/dashboard/notification">
+              <button className="w-12 h-12 bg-grey relative hover:bg-black/10">
+                <i className="fi fi-rr-bell text-2xl block mt-1">
+                </i>
+              </button>
+            </Link>
+            <div className="relative"
+                onClick={() => setUserNavPanelVisible(currentVal => !currentVal)}
+                ref={profileImgRef}
+            >
+              <button className="w-12 h-12 mt-1">
+                {
+                  image_url ? 
+                  <img src={image_url} className="w-full h-full object-cover rounded-full"/>
+                  :
+                  <p className="w-full h-full rounded-full text-center bg-dark-grey text-white text-[2rem]">{username.trim().slice(0, 1).toUpperCase()}</p>
+                }
+                
+              </button>
+
+              {
+                UserNavPanelVisible ? <UserNavigationPanel /> : ""
+              }
+              
+            </div>
+          </>
+          :
+          <>
+            <Link className="btn-dark py-2" to="/signin">
+             Sign In
+            </Link>
+            <Link className="hidden md:block btn-light py-2" to="/signup">
+             Sign Up
+            </Link>
+          </>
+        }
+        
       </nav>
 
       <Outlet />

@@ -27,7 +27,7 @@ const UserAuthForm = ({ type }) => {
         toast.error(err.response.data.error);
       })
     }catch(err){
-      console.log(err.Message);
+      console.log(err);
     }
   }
 
@@ -35,6 +35,7 @@ const UserAuthForm = ({ type }) => {
     try{
       e.preventDefault();
       let serverRoute = type == "signin" ? "/login" : "/register";
+
       let form = new FormData(authForm.current)
 
       let formData = {};
@@ -70,7 +71,7 @@ const UserAuthForm = ({ type }) => {
       }
       userAuth(serverRoute, formData);
     }catch(err){
-      console.log(err.Message)
+      console.log(err)
     }
   }
 
