@@ -24,3 +24,6 @@ logs
 
 # Environment variables
 .env
+
+#Firebase key
+/lekha-f7bcc-firebase-adminsdk-fbsvc-f5a195a36e.json
