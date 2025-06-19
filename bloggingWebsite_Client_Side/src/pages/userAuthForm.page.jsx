@@ -9,6 +9,7 @@ import axios from "axios";
 import { Toaster, toast } from "react-hot-toast";
 import { storeInSession, lookInSession } from "../common/session.jsx";
 import { UserContext } from "../App";
+import { authWithGoogle } from "../common/firebase";
 
 const UserAuthForm = ({ type }) => {
   const authForm = useRef();
@@ -75,6 +76,35 @@ const UserAuthForm = ({ type }) => {
     }
   }
 
+  function serverAuthWithGoogle(serverRoute, formData){
+    try{
+      axios.post(import.meta.VITE_SERVER_DOMAIN + serverRoute, formData)
+      .then(({ data }) => {
+        storeInSession("user", JSON.stringify(data));
+        setUserAuth(data);
+      }).catch(err => console.log(err));
+    }catch(err){
+      console.log(err);
+    }
+  }
+
+  async function handleGoogleLogin(e){
+    e.preventDefault();
+    try{
+      await authWithGoogle().then((user) => {
+        let formData = {
+          access_token: user.accessToken
+        }
+        serverAuthWithGoogle("/googleAuth", formData);
+      }).catch((err) => {
+        console.log("Google login failed");
+        console.log(err);
+      })
+    }catch(err){
+      console.log(err)
+    }
+  }
+
   return (
     access_token ? 
     <Navigate to="/" />
@@ -125,6 +155,7 @@ const UserAuthForm = ({ type }) => {
         <button
           className="btn-light normal-case w-[90%] mx-auto mt-5 transition duration-300 ease-in border border-solid flex gap-2
                 justify-center border-transparent hover:bg-transparent hover:border-black"
+          onClick={handleGoogleLogin}
         >
           <img src={googleImg} className="w-5" />
           Continue with Google

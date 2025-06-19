@@ -11,7 +11,6 @@ const App = () => {
 
   useEffect(() => {
     const userInSession = lookInSession("user");
-    console.log(userInSession, "user")
     if(userInSession) setUserAuth(JSON.parse(userInSession));
   }, []);
   
