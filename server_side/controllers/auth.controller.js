@@ -87,22 +87,21 @@ class AuthController {
     }
 
     static async googleAuth(req, res) {
-        let { accessToken } = req.body;
-
-        getAuth().verifyIdToken(accessToken).then(async (decodeUser) => {
+        let { access_token } = req.body;
+        getAuth().verifyIdToken(access_token).then(async (decodeUser) => {
             let { email, name, picture } = decodeUser;
             picture = picture.replace("s96-c", "s384-c");
-
-            let user = User.findOne({ "personal_info.email": email })
+            
+            let user = await User.findOne({ "personal_info.email": email })
                 .select("personal_info.fullname personal_info.username personal_info.profile_img google_auth")
                 .then(user => user || null)
 
             if (user) {//sign in
                 if (!user.google_auth) {
-                    return res.status(403).json({ "error": "This email was signed up without google. Please logiin with password to access the account." })
+                    return res.status(403).json({ "error": "This email was signed up without google. Please login with password to access the account." })
                 }
             } else {//sign up
-                let username = this.generateUserName(email);
+                let username = await AuthController.generateUserName(email);
 
                 user = new User({
                     personal_info: {
@@ -114,14 +113,15 @@ class AuthController {
                     google_auth: true
                 })
 
-                await user.Save().then(u => user = u)
+                await user.save().then(u => user = u)
                     .catch(err => {
                         return res.status(500).json({ "error": err.message })
                     });
-
-                res.status(200).json(this.formatDataToSend(user));
             }
-        }).catch(() => {
+
+            res.status(200).json(AuthController.formatDataToSend(user));
+        }).catch((err) => {
+            console.log(err.message);
             res.status(500).json({ "error": "Failed to authenticate you with google. Try with some other google account." })
         })
     }

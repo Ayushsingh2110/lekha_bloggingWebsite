@@ -25,7 +25,7 @@ app.use("/api", routes);
 const port = process.env.PORT;
 
 admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount);
+    credential: admin.credential.cert(serviceAccount)
 })
 
 app.listen(port, () => {
