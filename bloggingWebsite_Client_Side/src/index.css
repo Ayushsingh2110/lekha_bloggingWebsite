@@ -124,3 +124,8 @@
 .cdx-settings-button[data-tune='stretched'] {
   display: none;
 }
+
+textarea{
+    field-sizing: content;
+    min-height: 2lh;
+}

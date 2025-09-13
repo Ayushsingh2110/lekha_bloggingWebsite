@@ -7,8 +7,7 @@ const AuthGuardRoute = ({children}) => {
   
   const { UserAuth: {access_token}} = useContext(UserContext);
 
-  if(access_token === undefined) return <Loader />;
-  if(access_token === null) return <Navigate to="/signin" />
+  if(access_token === undefined || access_token === null) return <Navigate to="/signin" />
   
   return children;
 }
