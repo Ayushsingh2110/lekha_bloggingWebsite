@@ -20,9 +20,10 @@ const Editor = () => {
   
   const [blog, setBlog] = useState(blogSchema);
   const [EditorState, setEditorState] = useState("editor");
+  const [textEditor, setTextEditor] = useState({ isReady: false });
   return (
     <>
-    <EditorContext.Provider value={{blog, setBlog, EditorState, setEditorState}}>
+    <EditorContext.Provider value={{blog, setBlog, EditorState, setEditorState, textEditor, setTextEditor}}>
       {
         EditorState == "editor" ? <BlogEditor /> :
         <PublishForm />

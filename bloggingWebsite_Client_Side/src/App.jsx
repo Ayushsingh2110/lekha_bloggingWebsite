@@ -10,7 +10,7 @@ export const UserContext = createContext();
 const App = () => {
 
   const [UserAuth, setUserAuth] = useState({ access_token : undefined });
-
+  
   useEffect(() => {
     const userInSession = lookInSession("user");
     if(userInSession) setUserAuth(JSON.parse(userInSession));

@@ -1,17 +1,21 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../imgs/logo.png";
 import AnimationWrapper from "../common/page-animation.jsx";
 import defaultBanner from "../imgs/blog banner.png"
 import { EditorContext } from "../pages/editor.pages";
+import EditorJS from "@editorjs/editorjs";
+import { tool } from "./tools.component";
+import { Toaster, toast } from "react-hot-toast";
 
 const BlogEditor = () => {
 
-  const { blog , blog: { title, banner, content, tags, des }, setBlog} = useContext(EditorContext);
+  const { blog , blog: { title, banner, content, tags, des }, setBlog, 
+  textEditor, setTextEditor, EditorState, setEditorState} = useContext(EditorContext);
+  
+  //later - upload to aws e3
   const handleBannerUpload = (e) => {
-    let file = e.target.files[0];
-
-    console.log(file);
+    return toast.error("Image upload is not possible right now");
   }
 
   const handleTitleKeydown = (e) => {
@@ -21,13 +25,40 @@ const BlogEditor = () => {
   }
 
   const handleTitleChange = (e) => {
-    console.log(e)
     setBlog({...blog, title: e.target.value});
   }
 
   const handleBannerError = (e) => {
     const bannerElement = e.target;
     bannerElement.src = defaultBanner;
+  }
+
+  useEffect(() => {
+    if(!textEditor.isReady){
+      setTextEditor(new EditorJS({
+        holder: "textEditor",
+        data: "",
+        tools: tool,
+        placeholder: "write your mind here...",
+      }));
+    }
+  }, []);
+
+  function handlePublishEvent(){
+    if(!title.length){
+      return toast.error("Write blog title to publish it.");
+    }
+
+    if(textEditor.isReady){
+      textEditor.save().then(data => {
+        if(data.blocks.length){
+            setBlog({...blog, content: data});
+            setEditorState("publish");
+        }else{
+          return toast.error("Write something in your blog to publish it.");
+        }
+      })
+    }
   }
 
   return (
@@ -43,6 +74,7 @@ const BlogEditor = () => {
           <button
             className="py-2 px-4 rounded-[2rem] bg-black text-grey 
         hover:scale-110 active:scale-95"
+        onClick={handlePublishEvent}
           >
             Publish
           </button>
@@ -54,11 +86,12 @@ const BlogEditor = () => {
           </button>
         </div>
       </nav> 
-
+      <Toaster />
       <AnimationWrapper>
         <section>
-          <div className="mx-auto max-w-[720px] w-full grid justify-center">
-            <div className="relative bg-white aspect-video border-4 border-grey lg:min-w-[40vw] md:min-w-[60vw] min-w-[80vw]">
+          
+          <div className="mx-auto max-w-[720px] w-[80vw] grid justify-center lg:w-[40vw] md:w-[60vw]">
+            <div className="relative bg-white aspect-video border-4 border-grey " style={{width: 'inherit'}}>
               <label htmlFor="uploadBanner">
                 <img src={banner} onError={handleBannerError}/>
                 <input id="uploadBanner" type="file" accept=".png, .jpg, .jpeg" hidden
@@ -71,19 +104,16 @@ const BlogEditor = () => {
             <textarea
             placeholder="Blog title"
             className="text-2xl font-[500] mt-3 w-full outline-none resize-none leading-tight text-start p-1"
-            style={{fontFamily: 'cursive'}}
+            style={{fontFamily: 'cursive', width: 'inherit'}}
             onKeyDown={handleTitleKeydown}
             onChange={handleTitleChange}
             >
-
             </textarea>
 
-            <textarea
-            placeholder="write here..."
-            className="p-1 mt-3 w-full outline-none resize-none "
-            >
+            <hr className="w-full mb-3 mt-1 border-dark-grey"></hr>
 
-            </textarea>
+            <div id="textEditor" className="p-1 mt-3 w-" style={{fontFamily: 'cursive', width: 'inherit'}}></div>
+
           </div>
         </section>
       </AnimationWrapper>
