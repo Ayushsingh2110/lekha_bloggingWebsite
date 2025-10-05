@@ -5,6 +5,7 @@ import { EditorContext } from "../pages/editor.pages";
 import defaultBanner from "../imgs/blog banner.png";
 import Tag from "./tags.component.jsx";
 
+const TAG_LIMIT = 10;
 const PublishForm = () => {
   let {
     setEditorState,
@@ -32,12 +33,21 @@ const PublishForm = () => {
   };
 
   const handleAddingTag = (e) => {
-    if(e.keyCode == 13 || e.keyCode == 188){
+    if (e.keyCode == 13 || e.keyCode == 188) {
       e.preventDefault();
-      tags.push(e.target.push);
-      setBlog({...blog, tags})
+
+      if(tags.length < 10){
+        if (!tags.includes(e.target.value) && e.target.value.length) {
+          tags.push(e.target.value);
+          setBlog({ ...blog, tags });
+        }
+      }else{
+        toast.error(`You cannot add more than ${TAG_LIMIT} tags`)
+      }
+      
+      e.target.value = "";
     }
-  }
+  };
 
   return (
     <AnimationWrapper>
@@ -101,14 +111,15 @@ const PublishForm = () => {
           <div className="input-box pl-2 py-2 pb-2">
             <input
               className="bg-white p-2 w-full rounded-sm"
-              defaultValue="example"
+              placeholder="#movie, #travel, #food ..."
               onKeyDown={handleAddingTag}
             />
-            {
-              tags.map((t) => {
-                return <Tag tag={t}/>
-              } )
-            }
+            <div className="mt-4 flex flex-wrap gap-2">
+              {tags.map((t) => {
+                return <Tag tag={t} />;
+              })}
+            </div>
+            <p className="text-right">{TAG_LIMIT - tags.length} {TAG_LIMIT - tags.length == 1 ? 'tag' : 'tags'} left</p>
           </div>
         </div>
       </section>

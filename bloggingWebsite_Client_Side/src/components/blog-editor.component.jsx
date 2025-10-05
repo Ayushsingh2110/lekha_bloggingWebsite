@@ -10,7 +10,7 @@ import { Toaster, toast } from "react-hot-toast";
 
 const BlogEditor = () => {
 
-  const { blog , blog: { title, banner, content, tags, des }, setBlog, 
+  let { blog , blog: { title, banner, content, tags, des }, setBlog, 
   textEditor, setTextEditor, EditorState, setEditorState} = useContext(EditorContext);
   
   //later - upload to aws e3
@@ -34,14 +34,12 @@ const BlogEditor = () => {
   }
 
   useEffect(() => {
-    if(!textEditor.isReady){
       setTextEditor(new EditorJS({
         holder: "textEditor",
-        data: "",
+        data: content,
         tools: tool,
         placeholder: "write your mind here...",
       }));
-    }
   }, []);
 
   function handlePublishEvent(){
@@ -52,6 +50,7 @@ const BlogEditor = () => {
     if(textEditor.isReady){
       textEditor.save().then(data => {
         if(data.blocks.length){
+            console.log(data);
             setBlog({...blog, content: data});
             setEditorState("publish");
         }else{
@@ -102,6 +101,7 @@ const BlogEditor = () => {
             </div>
 
             <textarea
+            defaultValue={title}
             placeholder="Blog title"
             className="text-2xl font-[500] mt-3 w-full outline-none resize-none leading-tight text-start p-1"
             style={{fontFamily: 'cursive', width: 'inherit'}}
@@ -112,8 +112,7 @@ const BlogEditor = () => {
 
             <hr className="w-full mb-3 mt-1 border-dark-grey"></hr>
 
-            <div id="textEditor" className="p-1 mt-3 w-" style={{fontFamily: 'cursive', width: 'inherit'}}></div>
-
+            <div id="textEditor" className="p-1 mt-3" style={{fontFamily: 'cursive', width: 'inherit'}}></div>
           </div>
         </section>
       </AnimationWrapper>
